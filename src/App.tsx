@@ -19,7 +19,7 @@ export default function App() {
     event.preventDefault();
 
     const { data, errors } = await client.queries.generateHaiku({
-      prompt: "Frank Herbert's Dune",
+      prompt
     });
 
     if (!errors) {
