@@ -1,4 +1,18 @@
-import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
+import {
+  type ClientSchema,
+  a,
+  defineData,
+  defineFunction,
+} from "@aws-amplify/backend";
+
+export const MODEL_ID = "anthropic.claude-3-haiku-20240307-v1:0";
+
+export const generateHaikuFunction = defineFunction({
+  entry: "./generateHaiku.ts",
+  environment: {
+    MODEL_ID,
+  },
+});
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -7,11 +21,12 @@ specifies that any unauthenticated user can "create", "read", "update",
 and "delete" any "Todo" records.
 =========================================================================*/
 const schema = a.schema({
-  Todo: a
-    .model({
-      content: a.string(),
-    })
-    .authorization((allow) => [allow.guest()]),
+  generateHaiku: a
+    .query()
+    .arguments({ prompt: a.string().required() })
+    .returns(a.string())
+    .authorization((allow) => [allow.publicApiKey()])
+    .handler(a.handler.function(generateHaikuFunction)),
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -19,7 +34,10 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: 'iam',
+    defaultAuthorizationMode: "apiKey",
+    apiKeyAuthorizationMode: {
+      expiresInDays: 30,
+    },
   },
 });
 
